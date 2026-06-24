@@ -1,0 +1,175 @@
+using ListaDeCompras.ConsoleApp.Compartilhado;
+using ListaDeCompras.ConsoleApp.Modulos.ModuloCategoria;
+
+namespace ListaDeCompras.ConsoleApp.Modulos.ModuloProduto;
+
+public class TelaProduto : TelaBase, ITelaOpcoes
+{
+    private readonly RepositorioProduto repositorioProduto;
+    private readonly RepositorioCategoria repositorioCategoria;
+
+    public TelaProduto(
+        RepositorioProduto repositorioProduto,
+        RepositorioCategoria repositorioCategoria)
+        : base("Produto", repositorioProduto)
+    {
+        this.repositorioProduto = repositorioProduto;
+        this.repositorioCategoria = repositorioCategoria;
+    }
+
+    public override void VisualizarTodos(bool deveExibirCabecalho)
+    {
+        if (deveExibirCabecalho)
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Visualização de Produtos");
+            Console.WriteLine("---------------------------------");
+        }
+
+        Console.WriteLine(
+            "{0,-5} | {1,-20} | {2,-15} | {3,-10} | {4,-10}",
+            "Id", "Nome", "Categoria", "Unidade", "Preço"
+        );
+
+        EntidadeBase[] registros = repositorioProduto.SelecionarTodos();
+
+        for (int i = 0; i < registros.Length; i++)
+        {
+            Produto p = (Produto)registros[i];
+
+            if (p == null)
+                continue;
+
+            Console.WriteLine(
+                "{0,-5} | {1,-20} | {2,-15} | {3,-10} | {4,-10}",
+                p.Id,
+                p.Nome,
+                p.Categoria.Nome,
+                p.UnidadeMedida,
+                p.PrecoAproximado
+            );
+        }
+
+        if (deveExibirCabecalho)
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Digite ENTER para continuar");
+            Console.ReadLine();
+        }
+    }
+
+    protected override EntidadeBase ObterDadosCadastrais()
+    {
+        Console.Write("Informe o nome do produto: ");
+        string? nome = Console.ReadLine();
+
+        Console.WriteLine("---------------------------------");
+        Console.WriteLine("Selecione a categoria:");
+        Console.WriteLine("---------------------------------");
+
+        EntidadeBase[] categorias = repositorioCategoria.SelecionarTodos();
+
+        for (int i = 0; i < categorias.Length; i++)
+        {
+            Categoria c = (Categoria)categorias[i];
+
+            if (c == null)
+                continue;
+
+            Console.WriteLine($"{c.Id} - {c.Nome}");
+        }
+
+        Console.Write("Informe o ID da categoria: ");
+        int categoriaId = Convert.ToInt32(Console.ReadLine());
+
+        Categoria categoriaSelecionada = (Categoria)repositorioCategoria.SelecionarPorId(categoriaId);
+
+        Console.Write("Informe a unidade de medida (kg, litro, unidade, caixa...): ");
+        string? unidade = Console.ReadLine();
+
+        Console.Write("Informe o preço aproximado: ");
+        decimal preco = Convert.ToDecimal(Console.ReadLine());
+
+        ValidarProduto(nome, categoriaSelecionada, unidade, preco);
+
+        Produto novoProduto = new Produto(nome!, categoriaSelecionada, unidade!, preco);
+
+        if (ExisteProdutoDuplicado(novoProduto))
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Já existe um produto com esse nome nesta categoria!");
+            Console.WriteLine("---------------------------------");
+
+            return null!;
+        }
+
+        return novoProduto;
+    }
+
+    private void ValidarProduto(string? nome, Categoria categoria, string? unidade, decimal preco)
+    {
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new Exception("O nome é obrigatório.");
+
+        if (nome.Length < 2 || nome.Length > 100)
+            throw new Exception("O nome deve ter entre 2 e 100 caracteres.");
+
+        if (categoria == null)
+            throw new Exception("A categoria é obrigatória.");
+
+        if (string.IsNullOrWhiteSpace(unidade))
+            throw new Exception("A unidade de medida é obrigatória.");
+
+        if (preco <= 0)
+            throw new Exception("O preço deve ser maior que zero.");
+    }
+
+    private bool ExisteProdutoDuplicado(Produto novoProduto)
+    {
+        EntidadeBase[] registros = repositorioProduto.SelecionarTodos();
+
+        for (int i = 0; i < registros.Length; i++)
+        {
+            Produto p = (Produto)registros[i];
+
+            if (p == null)
+                continue;
+
+            if (p.Categoria.Id == novoProduto.Categoria.Id &&
+                p.Nome.Equals(novoProduto.Nome, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected override bool ExisteRegistroComInformacoesExclusivas(EntidadeBase entidade, int? idIgnorado = null)
+    {
+        Produto novoProduto = (Produto)entidade;
+
+        EntidadeBase[] produtos = repositorioProduto.SelecionarTodos();
+
+        for (int i = 0; i < produtos.Length; i++)
+        {
+            Produto p = (Produto)produtos[i];
+
+            if (p == null)
+                continue;
+
+            if (idIgnorado != p.Id &&
+                p.Categoria.Id == novoProduto.Categoria.Id &&
+                p.Nome.Equals(novoProduto.Nome, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("---------------------------------");
+                Console.WriteLine("Já existe um produto com esse nome nesta categoria!");
+                Console.WriteLine("---------------------------------");
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
