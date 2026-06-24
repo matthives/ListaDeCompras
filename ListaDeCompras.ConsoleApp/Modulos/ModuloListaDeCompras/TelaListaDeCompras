@@ -1,0 +1,112 @@
+using ListaDeCompras.ConsoleApp.Compartilhado;
+using ListaDeCompras.ConsoleApp.Modulos.ModuloListaDeCompras;
+
+namespace ListaDeCompras.ConsoleApp.Modulos.ModuloListaDeCompras;
+
+public class TelaListaDeCompras : TelaBase, ITelaOpcoes
+{
+    private readonly RepositorioListaDeCompras repositorioLista;
+
+    public TelaListaDeCompras(RepositorioListaDeCompras repositorioLista)
+        : base("Lista de Compras", repositorioLista)
+    {
+        this.repositorioLista = repositorioLista;
+    }
+
+    public override void VisualizarTodos(bool deveExibirCabecalho)
+    {
+        if (deveExibirCabecalho)
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Visualização de Listas de Compras");
+            Console.WriteLine("---------------------------------");
+        }
+
+        Console.WriteLine(
+            "{0,-5} | {1,-25} | {2,-10} | {3,-20} | {4,-10}",
+            "Id", "Nome", "Status", "Data Criação", "Total Itens"
+        );
+
+        EntidadeBase[] registros = repositorioLista.SelecionarTodos();
+
+        for (int i = 0; i < registros.Length; i++)
+        {
+            ListaDeCompras lista = (ListaDeCompras)registros[i];
+
+            if (lista == null)
+                continue;
+
+            Console.WriteLine(
+                "{0,-5} | {1,-25} | {2,-10} | {3,-20} | {4,-10}",
+                lista.Id,
+                lista.Nome,
+                lista.Status,
+                lista.DataCriacao.ToShortDateString(),
+                lista.TotalItens
+            );
+        }
+
+        if (deveExibirCabecalho)
+        {
+            Console.WriteLine("---------------------------------");
+            Console.WriteLine("Digite ENTER para continuar");
+            Console.ReadLine();
+        }
+    }
+
+    protected override EntidadeBase ObterDadosCadastrais()
+    {
+        Console.Write("Informe o nome da lista de compras: ");
+        string? nome = Console.ReadLine();
+
+        ValidarNome(nome);
+
+        ListaDeCompras novaLista = new ListaDeCompras(nome!);
+
+        return novaLista;
+    }
+
+    private void ValidarNome(string? nome)
+    {
+        if (string.IsNullOrWhiteSpace(nome))
+            throw new Exception("O nome da lista é obrigatório.");
+
+        if (nome.Length < 3 || nome.Length > 100)
+            throw new Exception("O nome da lista deve ter entre 3 e 100 caracteres.");
+    }
+
+    protected override bool ExisteRegistroComInformacoesExclusivas(EntidadeBase entidade, int? idIgnorado = null)
+    {
+        ListaDeCompras novaLista = (ListaDeCompras)entidade;
+
+        EntidadeBase[] listas = repositorioLista.SelecionarTodos();
+
+        for (int i = 0; i < listas.Length; i++)
+        {
+            ListaDeCompras l = (ListaDeCompras)listas[i];
+
+            if (l == null)
+                continue;
+
+            if (idIgnorado != l.Id &&
+                l.Nome.Equals(novaLista.Nome, StringComparison.OrdinalIgnoreCase))
+            {
+                Console.WriteLine("---------------------------------");
+                Console.WriteLine($"Já existe uma lista com o nome \"{l.Nome}\"!");
+                Console.WriteLine("---------------------------------");
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected override bool ExistemDependenciasAtivasDoRegistro(int idRegistro)
+    {
+        // FUTURO: impedir exclusão se lista tiver itens vinculados
+        // Ex: repositorioItens.ExistemItensPorLista(idRegistro)
+
+        return base.ExistemDependenciasAtivasDoRegistro(idRegistro);
+    }
+}
