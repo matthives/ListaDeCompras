@@ -21,19 +21,38 @@ public static class GeradorIdsProduto
         return contadorIds++;
     }
 }
+
+public enum UnidadeMedidaProduto
+{
+    Unidade,
+    Caixa,
+    Duzia,
+    Kg,
+    Lt,
+    Ml,
+    G
+
+}
 public class Produto : EntidadeBase
 {
     public string Nome { get; private set; }
     public Categoria Categoria { get; private set; }
-    public string UnidadeMedida { get; private set; }
+    public int ValorUnidadeMedida { get; private set; }
+    public UnidadeMedidaProduto UnidadeMedida { get; private set; } = UnidadeMedidaProduto.Unidade;
     public decimal PrecoAproximado { get; private set; }
 
-    public Produto(string nome, Categoria categoria, string unidadeMedida, decimal precoAproximado)
+    public Produto(
+        string nome,
+        Categoria categoria,
+        int valorUnidadeMedida,
+        UnidadeMedidaProduto unidadeMedida,
+        decimal precoAproximado)
     {
-        Id = GeradorIdsCategoria.GerarId();
+        Id = GeradorIdsProduto.GerarId();
 
         Nome = nome;
         Categoria = categoria;
+        ValorUnidadeMedida = valorUnidadeMedida;
         UnidadeMedida = unidadeMedida;
         PrecoAproximado = precoAproximado;
     }
@@ -44,6 +63,7 @@ public class Produto : EntidadeBase
 
         Nome = produtoAtualizado.Nome;
         Categoria = produtoAtualizado.Categoria;
+        ValorUnidadeMedida = produtoAtualizado.ValorUnidadeMedida;
         UnidadeMedida = produtoAtualizado.UnidadeMedida;
         PrecoAproximado = produtoAtualizado.PrecoAproximado;
     }
