@@ -28,7 +28,7 @@ public enum UnidadeMedidaProduto
     Caixa,
     Duzia,
     Kg,
-    Lt,
+    L,
     Ml,
     G
 

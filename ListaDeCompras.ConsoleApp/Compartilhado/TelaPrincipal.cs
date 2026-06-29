@@ -4,6 +4,25 @@ namespace ListaDeCompras.ConsoleApp.Compartilhado;
 
 public class TelaPrincipal
 {
+    private readonly RepositorioCategoria repositorioCategoria;
+    private readonly RepositorioProduto repositorioProduto;
+
+    public TelaPrincipal()
+    {
+        Categoria categoriaTeste = new Categoria("Produtos de Limpeza", CorCategoria.Vermelho);
+
+        repositorioCategoria = new RepositorioCategoria();
+        repositorioCategoria.Cadastrar(categoriaTeste);
+
+        Produto produtoTeste = new Produto(
+            "Detergente Limpol",
+            categoriaTeste,
+            1,
+            UnidadeMedidaProduto.L
+            18.50m);
+        repositorioProduto = new RepositorioProduto();
+        repositorioProduto.Cadastrar(produtoTeste);
+    }
     public ITelaOpcoes? ObterOpcaoMenuPrincipal()
     {
         Console.WriteLine("---------------------------------");
