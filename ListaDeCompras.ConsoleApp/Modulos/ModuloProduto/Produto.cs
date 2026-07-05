@@ -12,7 +12,7 @@ using ListaDeCompras.ConsoleApp.Compartilhado;
 using ListaDeCompras.ConsoleApp.Modulos.ModuloCategoria;
 
 
-namespace ListaDeCompras.ConsoleApp.Modulos.ModuloCategoria;
+namespace ListaDeCompras.ConsoleApp.Modulos.ModuloProduto;
 
 public static class GeradorIdsProduto
 {
