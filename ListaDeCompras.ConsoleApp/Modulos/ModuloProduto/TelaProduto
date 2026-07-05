@@ -27,8 +27,8 @@ public class TelaProduto : TelaBase, ITelaOpcoes
         }
 
         Console.WriteLine(
-            "{0,-5} | {1,-20} | {2,-15} | {3,-10} | {4,-10}",
-            "Id", "Nome", "Categoria", "Unidade", "Preço"
+            "{0, -7} | {1, -20} | {2, -20} | {3, -10} | {4, -17}",
+            "Id", "Nome", "Categoria", "Unidade", "Preço Aproximado"
         );
 
         EntidadeBase[] registros = repositorioProduto.SelecionarTodos();
@@ -41,12 +41,12 @@ public class TelaProduto : TelaBase, ITelaOpcoes
                 continue;
 
             Console.WriteLine(
-                "{0,-5} | {1,-20} | {2,-15} | {3,-10} | {4,-10}",
+                "{0, -7} | {1, -20} | {2, -20} | {3, -10} | {4, -17}",
                 p.Id,
                 p.Nome,
                 p.Categoria.Nome,
-                p.UnidadeMedida,
-                p.PrecoAproximado
+                string.Join(" ", p.ValorUnidadeMedida, p.UnidadeMedida),
+                p.PrecoAproximado.ToString("C2")
             );
         }
 
@@ -63,47 +63,33 @@ public class TelaProduto : TelaBase, ITelaOpcoes
         Console.Write("Informe o nome do produto: ");
         string? nome = Console.ReadLine();
 
-        Console.WriteLine("---------------------------------");
-        Console.WriteLine("Selecione a categoria:");
-        Console.WriteLine("---------------------------------");
+        VisualizarCategorias();
 
-        EntidadeBase[] categorias = repositorioCategoria.SelecionarTodos();
+        return new Produto();
 
-        for (int i = 0; i < categorias.Length; i++)
+    }
+
+    private void VisualizarCategorias()
+    {
+        Console.WriteLine(
+            "{0, -7} | {1, -20} | {2, -10}",
+            "Id", "Nome", "Cor"
+        );
+
+        EntidadeBase[] registros = repositorioCategoria.SelecionarTodos();
+
+        for (int i = 0; i < registros.Length; i++)
         {
-            Categoria c = (Categoria)categorias[i];
+            Categoria c = (Categoria)registros[i];
 
             if (c == null)
                 continue;
 
-            Console.WriteLine($"{c.Id} - {c.Nome}");
+            Console.WriteLine(
+                "{0, -7} | {1, -20} | {2, -10}",
+                c.Id, c.Nome, c.Cor
+            );
         }
-
-        Console.Write("Informe o ID da categoria: ");
-        int categoriaId = Convert.ToInt32(Console.ReadLine());
-
-        Categoria categoriaSelecionada = (Categoria)repositorioCategoria.SelecionarPorId(categoriaId);
-
-        Console.Write("Informe a unidade de medida (kg, litro, unidade, caixa...): ");
-        string? unidade = Console.ReadLine();
-
-        Console.Write("Informe o preço aproximado: ");
-        decimal preco = Convert.ToDecimal(Console.ReadLine());
-
-        ValidarProduto(nome, categoriaSelecionada, unidade, preco);
-
-        Produto novoProduto = new Produto(nome!, categoriaSelecionada, unidade!, preco);
-
-        if (ExisteProdutoDuplicado(novoProduto))
-        {
-            Console.WriteLine("---------------------------------");
-            Console.WriteLine("Já existe um produto com esse nome nesta categoria!");
-            Console.WriteLine("---------------------------------");
-
-            return null!;
-        }
-
-        return novoProduto;
     }
 
     private void ValidarProduto(string? nome, Categoria categoria, string? unidade, decimal preco)

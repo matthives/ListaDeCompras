@@ -1,4 +1,6 @@
 using ListaDeCompras.ConsoleApp.Modulos.ModuloCategoria;
+using ListaDeCompras.ConsoleApp.Modulos.ModuloProduto;
+
 
 namespace ListaDeCompras.ConsoleApp.Compartilhado;
 
@@ -18,7 +20,7 @@ public class TelaPrincipal
             "Detergente Limpol",
             categoriaTeste,
             1,
-            UnidadeMedidaProduto.L
+            UnidadeMedidaProduto.L,
             18.50m);
         repositorioProduto = new RepositorioProduto();
         repositorioProduto.Cadastrar(produtoTeste);
@@ -38,10 +40,10 @@ public class TelaPrincipal
         string? opcaoMenuPrincipal = Console.ReadLine()?.ToUpper();
 
         if (opcaoMenuPrincipal == "1")
-            return null;
+            return new TelaCategoria(repositorioCategoria, repositorioProduto);
 
         if (opcaoMenuPrincipal == "2")
-            return null;
+            return new TelaProduto(repositorioProduto, repositorioCategoria);
 
         if (opcaoMenuPrincipal == "3")
             return null;
