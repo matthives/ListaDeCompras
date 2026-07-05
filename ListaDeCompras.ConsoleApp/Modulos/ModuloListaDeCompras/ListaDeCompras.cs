@@ -1,8 +1,8 @@
 using ListaDeCompras.ConsoleApp.Compartilhado;
 
-namespace ListaDeCompras.ConsoleApp.Modulos.ModuloListaDeCompras;
+namespace ListaDeCompras.ConsoleApp.Modulos.ModuloListaCompras;
 
-public static class GeradorIdsListaDeCompras
+public static class GeradorIdsListaCompras
 {
     private static int contadorIds = 1;
 
@@ -12,62 +12,58 @@ public static class GeradorIdsListaDeCompras
     }
 }
 
-public enum StatusLista
+public enum StatusListaCompras
 {
     Aberta,
     Concluida
 }
 
-public class ListaDeCompras : EntidadeBase
+public class ListaCompras : EntidadeBase
 {
     public string Nome { get; private set; }
     public DateTime DataCriacao { get; private set; }
-    public StatusLista Status { get; private set; }
+    public StatusListaCompras Status { get; private set; } = StatusListaCompras.Aberta;
+    public ItemListaCompras[] Itens { get; private set; } = new ItemListaCompras[100];
 
-    // Esses dois serão calculados com base nos itens (futuro módulo ItemLista)
-    public int TotalItens { get; private set; }
-    public decimal TotalEstimado { get; private set; }
-
-    public ListaDeCompras(string nome)
+    public ListaCompras(string nome)
     {
-        ValidarNome(nome);
-
-        Id = GeradorIdsListaDeCompras.GerarId();
-
+        Id = GeradorIdsListaCompras.GerarId();
         Nome = nome;
         DataCriacao = DateTime.Now;
-        Status = StatusLista.Aberta;
+    }
 
-        TotalItens = 0;
-        TotalEstimado = 0;
+    public void AdicionarItem(ItemListaCompras itemLista)
+    {
+        for (int i = 0; i < Itens.Length; i++)
+        {
+            if (Itens[i] == null)
+            {
+                Itens[i] = itemLista;
+                return;
+            }
+        }
+    }
+
+    public void RemoverItem(int idItemLista)
+    {
+        for (int i = 0; i < Itens.Length; i++)
+        {
+            if (Itens[i] == null)
+                continue;
+
+            if (Itens[i].Id == idItemLista)
+            {
+                Itens[i] = null;
+                return;
+            }
+        }
     }
 
     public override void Atualizar(EntidadeBase entidadeAtualizada)
     {
-        ListaDeCompras listaAtualizada = (ListaDeCompras)entidadeAtualizada;
-
-        ValidarNome(listaAtualizada.Nome);
+        ListaCompras listaAtualizada = (ListaCompras)entidadeAtualizada;
 
         Nome = listaAtualizada.Nome;
         Status = listaAtualizada.Status;
-
-        // DataCriacao não muda
-        // Totais serão recalculados via itens futuramente
-    }
-
-    private void ValidarNome(string nome)
-    {
-        if (string.IsNullOrWhiteSpace(nome))
-            throw new Exception("O nome da lista é obrigatório.");
-
-        if (nome.Length < 3 || nome.Length > 100)
-            throw new Exception("O nome da lista deve ter entre 3 e 100 caracteres.");
-    }
-
-    // Métodos futuros (quando criarmos itens)
-    public void AtualizarTotais(int totalItens, decimal totalEstimado)
-    {
-        TotalItens = totalItens;
-        TotalEstimado = totalEstimado;
     }
 }
