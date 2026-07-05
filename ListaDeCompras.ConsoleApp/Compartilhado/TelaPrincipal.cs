@@ -1,3 +1,4 @@
+using ListaDeCompras.ConsoleApp.Compartilhado.Arquivos;
 using ListaDeCompras.ConsoleApp.Modulos.ModuloCategoria;
 using ListaDeCompras.ConsoleApp.Modulos.ModuloListaCompras;
 using ListaDeCompras.ConsoleApp.Modulos.ModuloProduto;
@@ -12,26 +13,13 @@ public class TelaPrincipal
 
     public TelaPrincipal()
     {
-        Categoria categoriaTeste = new Categoria("Produtos de Limpeza", CorCategoria.Vermelho);
+        ContextoJson contexto = new ContextoJson();
 
-        repositorioCategoria = new RepositorioCategoria();
-        repositorioCategoria.Cadastrar(categoriaTeste);
+        contexto.Carregar();
 
-        Produto produtoTeste = new Produto(
-            "Detergente Limpol",
-            categoriaTeste,
-            1,
-            UnidadeMedidaProduto.L,
-            18.50m);
-
-        repositorioProduto = new RepositorioProduto();
-        repositorioProduto.Cadastrar(produtoTeste);
-
-        ListaCompras listaTeste = new ListaCompras("Compras do Mês");
-        listaTeste.AdicionarItem(new ItemListaCompras(produtoTeste, 3));
-
-        repositorioListaCompras = new RepositorioListaCompras();
-        repositorioListaCompras.Cadastrar(listaTeste);
+        repositorioCategoria = new RepositorioCategoria(contexto);
+        repositorioProduto = new RepositorioProduto(contexto);
+        repositorioListaCompras = new RepositorioListaCompras(contexto);
     }
 
     public ITelaOpcoes? ObterOpcaoMenuPrincipal()
