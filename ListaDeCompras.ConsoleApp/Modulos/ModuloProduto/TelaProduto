@@ -10,8 +10,7 @@ public class TelaProduto : TelaBase, ITelaOpcoes
 
     public TelaProduto(
         RepositorioProduto repositorioProduto,
-        RepositorioCategoria repositorioCategoria)
-        : base("Produto", repositorioProduto)
+        RepositorioCategoria repositorioCategoria) : base("Produto", repositorioProduto)
     {
         this.repositorioProduto = repositorioProduto;
         this.repositorioCategoria = repositorioCategoria;
@@ -63,10 +62,114 @@ public class TelaProduto : TelaBase, ITelaOpcoes
         Console.Write("Informe o nome do produto: ");
         string? nome = Console.ReadLine();
 
+        Console.WriteLine("---------------------------------");
+
         VisualizarCategorias();
 
-        return new Produto();
+        Console.WriteLine("---------------------------------");
 
+        Console.Write("Informe o ID da categoria do produto: ");
+        int idCategoria = Convert.ToInt32(Console.ReadLine());
+
+        Console.WriteLine("---------------------------------");
+
+        Categoria? categoriaSelecionada =
+            (Categoria?)repositorioCategoria.SelecionarPorId(idCategoria);
+
+        Console.Write("Informe o valor/quantidade da unidade de medida do produto: ");
+        int valorUnidadeMedida = Convert.ToInt32(Console.ReadLine());
+
+        Console.WriteLine("---------------------------------");
+        Console.WriteLine("Selecione uma unidade de medida disponível para o produto");
+        Console.WriteLine("---------------------------------");
+        Console.WriteLine("1 - Unidade (Padrão)");
+        Console.WriteLine("2 - Caixa");
+        Console.WriteLine("3 - Duzia");
+        Console.WriteLine("4 - Kg");
+        Console.WriteLine("5 - L");
+        Console.WriteLine("6 - Ml");
+        Console.WriteLine("7 - G");
+        Console.WriteLine("---------------------------------");
+        Console.Write("Informe a unidade de medida escolhida: ");
+        string? unidadeSelecionada = Console.ReadLine();
+
+        UnidadeMedidaProduto unidadeMedida;
+
+        switch (unidadeSelecionada)
+        {
+            case "1":
+                unidadeMedida = UnidadeMedidaProduto.Unidade;
+                break;
+
+            case "2":
+                unidadeMedida = UnidadeMedidaProduto.Caixa;
+                break;
+
+            case "3":
+                unidadeMedida = UnidadeMedidaProduto.Duzia;
+                break;
+
+            case "4":
+                unidadeMedida = UnidadeMedidaProduto.Kg;
+                break;
+
+            case "5":
+                unidadeMedida = UnidadeMedidaProduto.L;
+                break;
+
+            case "6":
+                unidadeMedida = UnidadeMedidaProduto.Ml;
+                break;
+
+            case "7":
+                unidadeMedida = UnidadeMedidaProduto.G;
+                break;
+
+            default:
+                unidadeMedida = UnidadeMedidaProduto.Unidade;
+                break;
+        }
+
+        Console.Write("Informe o preço aproximado do produto: ");
+        decimal precoAproximado = Convert.ToDecimal(Console.ReadLine());
+
+        return new Produto(
+            nome!,
+            categoriaSelecionada!,
+            valorUnidadeMedida,
+            unidadeMedida,
+            precoAproximado);
+    }
+
+    protected override bool ExisteRegistroComInformacoesExclusivas(
+        EntidadeBase entidade, int? idIgnorado = null)
+    {
+        Produto produto = (Produto)entidade;
+
+        EntidadeBase[] produtos = repositorioProduto.SelecionarTodos();
+
+        for (int i = 0; i < produtos.Length; i++)
+        {
+            Produto p = (Produto)produtos[i];
+
+            if (p == null)
+                continue;
+
+            if (
+                p.Id != idIgnorado &&
+                p.Nome.ToLower() == produto.Nome.ToLower() &&
+                p.Categoria == produto.Categoria
+            )
+            {
+                Console.WriteLine("---------------------------------");
+                Console.WriteLine($"Já existe um produto com o nome {p.Nome} na categoria!");
+                Console.WriteLine("---------------------------------");
+
+                return true;
+            }
+        }
+
+        return base.ExisteRegistroComInformacoesExclusivas(entidade, idIgnorado);
     }
 
     private void VisualizarCategorias()
@@ -90,72 +193,5 @@ public class TelaProduto : TelaBase, ITelaOpcoes
                 c.Id, c.Nome, c.Cor
             );
         }
-    }
-
-    private void ValidarProduto(string? nome, Categoria categoria, string? unidade, decimal preco)
-    {
-        if (string.IsNullOrWhiteSpace(nome))
-            throw new Exception("O nome é obrigatório.");
-
-        if (nome.Length < 2 || nome.Length > 100)
-            throw new Exception("O nome deve ter entre 2 e 100 caracteres.");
-
-        if (categoria == null)
-            throw new Exception("A categoria é obrigatória.");
-
-        if (string.IsNullOrWhiteSpace(unidade))
-            throw new Exception("A unidade de medida é obrigatória.");
-
-        if (preco <= 0)
-            throw new Exception("O preço deve ser maior que zero.");
-    }
-
-    private bool ExisteProdutoDuplicado(Produto novoProduto)
-    {
-        EntidadeBase[] registros = repositorioProduto.SelecionarTodos();
-
-        for (int i = 0; i < registros.Length; i++)
-        {
-            Produto p = (Produto)registros[i];
-
-            if (p == null)
-                continue;
-
-            if (p.Categoria.Id == novoProduto.Categoria.Id &&
-                p.Nome.Equals(novoProduto.Nome, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected override bool ExisteRegistroComInformacoesExclusivas(EntidadeBase entidade, int? idIgnorado = null)
-    {
-        Produto novoProduto = (Produto)entidade;
-
-        EntidadeBase[] produtos = repositorioProduto.SelecionarTodos();
-
-        for (int i = 0; i < produtos.Length; i++)
-        {
-            Produto p = (Produto)produtos[i];
-
-            if (p == null)
-                continue;
-
-            if (idIgnorado != p.Id &&
-                p.Categoria.Id == novoProduto.Categoria.Id &&
-                p.Nome.Equals(novoProduto.Nome, StringComparison.OrdinalIgnoreCase))
-            {
-                Console.WriteLine("---------------------------------");
-                Console.WriteLine("Já existe um produto com esse nome nesta categoria!");
-                Console.WriteLine("---------------------------------");
-
-                return true;
-            }
-        }
-
-        return false;
     }
 }
